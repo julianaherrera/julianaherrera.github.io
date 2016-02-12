@@ -30,7 +30,7 @@ yrprices <- (data) %>%
   mutate(corrected = meanprice/cpi*cpi[24])
 head(yrprices) # corrected prices for inflation. Baseline year = 2013
 
-p <-ggplot(yrprices) +
+p <-ggplot(yrprices) + ## Graph of corrected prices per year
   geom_line(aes(x=year, y=meanprice, colour = 'meanprice')) +
   geom_line(aes(x=year, y=corrected, colour ='corrected')) +
   theme_bw()
@@ -40,13 +40,20 @@ monthprices <- (data) %>%
   select(-fishery, -spp) %>%
   group_by(month, year) %>% 
   summarize(meanprice = mean(price, na.rm=T)) %>% 
-  bind_cols(CPI) %>% 
+  bind_cols(CPIm) %>% 
   mutate(corrected = meanprice/cpi*cpi[289])
 head(monthprices) # corrected prices for inflation. Baseline year = 2013
 
+# pm<- ggplot(monthprices) %>% # graph for corrected prices per month
+#   geom_line(aes(x=year, y=meanprice, colour='meanprice')) +
+#   geom_line(aes(x=year, y=corrected, colour='corrected')) +
+#   theme_bw()
+# pm
 
 #==PART ===========================================================
 
 #==PART ===========================================================
 # Projection of prices - regression of price as a function of catch 
+
+
 
