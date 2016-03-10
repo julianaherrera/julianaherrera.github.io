@@ -48,9 +48,10 @@ p
 yreg <-yrprices %>% 
   left_join(catch, by = 'year') %>% 
   select(year, corrected, sum) %>% 
+  as.numeric()
  
-plot(yreg$sum, yreg$corrected)
-yreg_lm <- lm(yreg$corrected ~ yreg$sum) # y = mx + c ---> y = 2.097x10^3 x - 1.202x10^-5 p>0.05 therefore catch is not good predictor of prices. p = 0.88, linear model doesn't describe correctly the data. 
+plot(yreg$sum, yreg$meanprice)
+yreg_lm <- lm(log(yreg$meanprice) ~ log(yreg$sum)) # y = mx + c ---> y = 2.097x10^3 x - 1.202x10^-5 p>0.05 therefore catch is not good predictor of prices. p = 0.88, linear model doesn't describe correctly the data. 
 yreg_lm
 summary(yreg_lm)
 

@@ -1,0 +1,29 @@
+---
+title: "Workshop with Dan and Tyler"
+author: "Juliana Herrera"
+date: "March 10, 2016"
+output: html_document
+---
+```{r}
+## Install packages if needed
+install.packages('devtools')
+install.packages('readr')
+install.packages('dplyr')
+install.packages('tidyr')
+install.packages('stringr')
+install.packages('ggplot2')
+
+# Load packages
+library(devtools)
+library(readr)
+# library(plyr)
+library(dplyr)
+library(broom)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+
+# Check package versions after Packages pane -> Update
+devtools::session_info()
+```
+

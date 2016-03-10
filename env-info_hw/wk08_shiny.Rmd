@@ -1,0 +1,10 @@
+---
+title: "wk08_shiny"
+author: "Juliana Herrera"
+date: "March 9, 2016"
+output: html_document
+---
+```{r, eval=FALSE}
+shiny::runGitHub()
+```
+

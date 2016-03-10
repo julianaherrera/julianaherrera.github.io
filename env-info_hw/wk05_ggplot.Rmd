@@ -7,7 +7,7 @@ output: html_document
 
 ## joining data
 
-For this portion of the individual assignment, similar to last week, you'll find it easiest to copy and paste from `## joining data` onwards in  [`env-info/wk05_joining.Rmd`](https://raw.githubusercontent.com/ucsb-bren/env-info/gh-pages/wk05_joining.Rmd) to your `env-info_hw/wk05_ggplot.Rmd`. Then you can play with different chunks of the code. Please be sure to answer all tasks and questions at the bottom.
+For this portion of the individual assignment, similar to last week, you'll find it easiest to copy and paste from `## joining data` onwards in  [`env-info/wk05_joining.Rmd`](https://raw.githubusercontent.com/ucsb-bren/env-info/gh-pages/wk05_joining.Rmd) to your `<user>.github.io/env-info_hw/wk05_ggplot.Rmd`. Then you can play with different chunks of the code. Please be sure to answer all tasks and questions at the bottom.
 
 The R chunks explaining the `dplyr` join functions below are pulled from the excellent [**wrangling-webinar.pdf**](wk03_dplyr/wrangling-webinar.pdf) presentation, which you should consult as you execute (see shortcuts in [rstudio-IDE-cheatsheet.pdf](refs/cheatsheets/rstudio-IDE-cheatsheet.pdf)). 
 
@@ -28,10 +28,13 @@ if (basename(getwd()) != wd){
   stop(sprintf("WHOAH! Your working directory is not in '%s'!\n   getwd(): %s", wd, getwd()))
 }
 ```
+
 ### `bind_cols`
 
+bind columns between data frames
+
 ```{r bind_cols}
-library(dplyr) 
+library(dplyr)
 
 y = data.frame(
   x1 = c('A','B','C'), 
@@ -48,6 +51,8 @@ bind_cols(y, z)
 
 ### `bind_rows`
 
+bind rows of data frames
+
 ```{r bind_rows}
 y
 z
@@ -55,6 +60,8 @@ bind_rows(y, z)
 ```
 
 ### `union`
+
+set operation on data frames, returning all unique rows
 
 ```{r union}
 y
@@ -64,6 +71,8 @@ union(y, z)
 
 ### `intersect`
 
+set operation on data frames, returning those rows in common
+
 ```{r intersect}
 y
 z
@@ -72,6 +81,8 @@ intersect(y, z)
 
 ### `setdiff`
 
+set operation on data frames, returning all mismatched rows
+
 ```{r setdiff}
 y
 z
@@ -79,6 +90,8 @@ setdiff(y, z)
 ```
 
 ### `left_join`
+
+return all rows from x, and all columns from x and y. Rows in x with no match in y will have NA values in the new columns.
 
 ```{r left_join}
 songs = data.frame(
@@ -94,17 +107,23 @@ left_join(songs, artists, by='name')
 
 ### `inner_join`
 
+return all rows from x where there are matching values in y, and all columns from x and y
+
 ```{r inner_join}
 inner_join(songs, artists, by = "name")
 ```
 
 ### `semi_join`
 
+return all rows from x where there are matching values in y, keeping just columns from x
+
 ```{r semi_join}
 semi_join(songs, artists, by = "name")
 ```
 
 ### `anti_join`
+
+return all rows from x where there are not matching values in y, keeping just columns from x
 
 ```{r anti_join}
 anti_join(songs, artists, by = "name")
@@ -114,26 +133,56 @@ anti_join(songs, artists, by = "name")
 
 You'll join the [population](http://data.okfn.org/data/core/population) dataset to calculate per capita CO<sub>2</sub> emissions.
 
-_**Task**. Summarize the total emissions by country  (not World or EU28) per capita across years from your long format table and return the top 5 emitting countries for **2014**._
+_**Task**. Calculate the per capita emissions by country (not World or EU28) and return the top 5 emitting countries for **2014**._
 
-_**Task**. Summarize the total emissions by country (not World or EU28) per capita across years from your long format table and return the top 5 emitting countries on **average** across all years._ 
+_**Task**. Summarize the per capita emissions by country (not World or EU28) as the mean (ie average)  value across all years and return the top 5 emitting countries._ 
 
-```{r read co2}
-library(dplyr)
+```{r read co2 & popn}
+library(readr)
 library(readxl) # install.packages('readxl')
-
-# xls downloaded from http://edgar.jrc.ec.europa.eu/news_docs/CO2_1970-2014_dataset_of_CO2_report_2015.xls
-xls = './data/co2_europa.xls'
+library(dplyr)
+library(tidyr)
+library(httr)   # install.packages('httr')
+library(plyr)   # install.packages('plyr')
 
 print(getwd())
+
+# population Excel file
+url = 'http://edgar.jrc.ec.europa.eu/news_docs/CO2_1970-2014_dataset_of_CO2_report_2015.xls'
+out = 'co2_europa.xls'
+if (!file.exists(out)) writeBin(content(GET(url), 'raw'), out)
+
+# country lookup csv file
+url = 'https://raw.githubusercontent.com/ucsb-bren/env-info/gh-pages/data/co2_country_to_popn.csv'
+out = 'co2_country_to_popn.csv'
+if (!file.exists(out)) writeBin(content(GET(url), 'raw'), out)
+
+# read in carbon dioxide emissions file
 co2 = read_excel(xls, skip=12)
-co2
-```
 
-```{r popn}
-library(readr)
-library(tidyr)
+# get lookup table to translate some country names in popn to those in co2 table
+cntry = read_csv('co2_country_to_popn.csv')
 
-popn = read_csv(
-  'https://raw.githubusercontent.com/datasets/population/master/data/population.csv')
+# read in population and revalue some country names to match co2 table
+popn = read_csv('https://raw.githubusercontent.com/datasets/population/master/data/population.csv') %>%
+  select(country=`Country Name`, year=Year, popn=Value) %>%
+  mutate(
+    country = plyr::revalue(
+      country, 
+      setNames(cntry$country_co2, cntry$country_popn))) 
+
+popn14 <- popn %>%
+   filter(year=='2014') 
+
+co214<- co2 %>%
+  gather('year', 'emission', c(`1970.000000`:`2014.000000`)) %>% 
+  filter(year== '2014.000000') %>%
+  select(-year) %>% 
+  # left_join((pop14, by = c('Country', 'country'))
+
+
+
+capita<- left_join(popn14, co214, by = c('country', 'Country'))
+
+  
 ```
