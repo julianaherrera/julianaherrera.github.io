@@ -5,6 +5,6 @@ date: "March 9, 2016"
 output: html_document
 ---
 ```{r, eval=FALSE}
-shiny::runGitHub()
+shiny::runGitHub(http://127.0.0.1:7559)
 ```
 
