@@ -40,6 +40,7 @@ ui <- shinyUI(fluidPage(
    )
 ))
 
+
 # Define server logic required to draw a histogram
 server <- shinyServer(function(input, output) {
   output$map <- renderPlot({
